@@ -7,3 +7,4 @@ add_executable(TI_301_PJT
         main.c utils.c
         hasse.c)
 
+include_directories(include/)
