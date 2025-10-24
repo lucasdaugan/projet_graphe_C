@@ -1,10 +1,14 @@
-cmake_minimum_required(VERSION 3.24)
-project(2526_TI301_PJT C)
+cmake_minimum_required(VERSION 3.16)
+project(projet_graphe_C C)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
-add_executable(TI_301_PJT
-        main.c utils.c
-        hasse.c)
+# Dossiers d’inclusion
+include_directories(include)
 
-include_directories(include/)
+add_executable(main
+        src/graph/graph.c
+        src/graph/cell.c
+        src/graph/list.c
+)
