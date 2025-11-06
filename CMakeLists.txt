@@ -11,4 +11,9 @@ add_executable(main
         src/graph/graph.c
         src/graph/cell.c
         src/graph/list.c
+        cell.h
+        list.c
+        list.h
+        adj_list.c
+        adj_list.h
 )
