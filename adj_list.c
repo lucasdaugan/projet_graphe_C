@@ -55,7 +55,7 @@ void free_adjlist(adjlist_t *g) {
 void add_cell_to_list(list_t *lst, int dest, float prob) {
     cell_t *c = create_cell(dest, prob);
     if (c == NULL) return;
-    c->next = lst->head; // insertion en tête
+    c->next = lst->head;
     lst->head = c;
 }
 
@@ -93,7 +93,7 @@ adjlist_t readGraph(const char *filename) {
     float proba;
     while (fscanf(file, "%d %d %f", &depart, &arrivee, &proba) == 3) {
         if (depart < 1 || depart > nbvert || arrivee < 1 || arrivee > nbvert) {
-            fprintf(stderr, "Warning: edge %d->%d out of range, ignored\n", depart, arrivee);
+            fprintf(stderr, "%d->%d out of range\n", depart, arrivee);
             continue;
         }
         // stocker en utilisant l'index depart-1
@@ -118,8 +118,8 @@ int verify_markov(const adjlist_t *g, float tol_low, float tol_high) {
             ok = 0;
         }
     }
-    if (ok) printf("Le graphe est un graphe de Markov\n");
-    else printf("Le graphe n'est pas un graphe de Markov\n");
+    if (ok) {printf("Le graphe est un graphe de Markov\n")};
+    else {printf("Le graphe n'est pas un graphe de Markov\n")};
     return ok;
 }
 
