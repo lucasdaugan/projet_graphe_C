@@ -5,72 +5,169 @@
 #include "adj_list.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-AdjList create_adjlist(int n) {
-    AdjList G;
-    G.n = n;
-    G.lists = malloc(sizeof(List) * n);
-    if (!G.lists) {
-        perror("malloc lists");
+cell_t *create_cell(int dest, float prob) {
+    cell_t *c = (cell_t*)malloc(sizeof(cell_t));
+    if (c == NULL) return NULL;
+    c->dest = dest;
+    c->prob = prob;
+    c->next = NULL;
+    return c;
+}
+
+list_t create_list() {
+    list_t l;
+    l.head = NULL;
+    return l;
+}
+
+void free_list(list_t *lst) {
+    cell_t *cur = lst->head;
+    while (cur) {
+        cell_t *tmp = cur;
+        cur = cur->next;
+        free(tmp);
+    }
+    lst->head = NULL;
+}
+
+adjlist_t create_adjlist(int n) {
+    adjlist_t g;
+    g.size = n;
+    g.lists = (list_t*)malloc(sizeof(list_t)*n);
+    if (g.lists == NULL) {
+        g.size = 0;
+        return g;
+    }
+    for (int i=0;i<n;i++) g.lists[i] = create_list();
+    return g;
+}
+
+void free_adjlist(adjlist_t *g) {
+    if (g  == NULL || g->lists  == NULL) return;
+    for (int i=0;i<g->size;i++) free_list(&g->lists[i]);
+    free(g->lists);
+    g->lists = NULL;
+    g->size = 0;
+}
+
+void add_cell_to_list(list_t *lst, int dest, float prob) {
+    cell_t *c = create_cell(dest, prob);
+    if (c == NULL) return;
+    c->next = lst->head; // insertion en tête
+    lst->head = c;
+}
+
+void print_list(const list_t *lst, int vertex) {
+    printf("Liste pour le sommet %d:[head]", vertex);
+    cell_t *cur = lst->head;
+    while (cur) {
+        printf(" -> (%d, %.2f)", cur->dest, cur->prob);
+        cur = cur->next;
+    }
+    printf("\n");
+}
+
+void print_adjlist(const adjlist_t *g) {
+    if (g == NULL) return;
+    for (int i=0;i<g->size;i++) {
+        print_list(&g->lists[i], i+1);
+    }
+}
+
+adjlist_t readGraph(const char *filename) {
+    FILE *file = fopen(filename, "rt");
+    if (file == NULL) {
+        perror("Could not open file for reading");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < n; ++i)
-        G.lists[i] = create_empty_list();
-    return G;
-}
-
-void free_adjlist(AdjList *G) {
-    for (int i = 0; i < G->n; ++i) {
-        Cell *cur = G->lists[i].head;
-        while (cur) {
-            Cell *tmp = cur;
-            cur = cur->next;
-            free(tmp);
+    int nbvert;
+    if (fscanf(file, "%d", &nbvert) != 1) {
+        perror("Could not read number of vertices");
+        fclose(file);
+        exit(EXIT_FAILURE);
+    }
+    adjlist_t g = create_adjlist(nbvert);
+    int depart, arrivee;
+    float proba;
+    while (fscanf(file, "%d %d %f", &depart, &arrivee, &proba) == 3) {
+        if (depart < 1 || depart > nbvert || arrivee < 1 || arrivee > nbvert) {
+            fprintf(stderr, "Warning: edge %d->%d out of range, ignored\n", depart, arrivee);
+            continue;
         }
+        // stocker en utilisant l'index depart-1
+        add_cell_to_list(&g.lists[depart-1], arrivee, proba);
     }
-    free(G->lists);
-}
-
-void add_edge(AdjList *G, int depart, int arrivee, float prob) {
-    Cell *c = create_cell(arrivee, prob);
-    add_cell_to_list(&G->lists[depart - 1], c);
-}
-
-void print_adjlist(const AdjList *G) {
-    for (int i = 0; i < G->n; ++i) {
-        printf("Liste du sommet %d : ", i+1);
-        print_list(&G->lists[i]);
-    }
-}
-
-AdjList readGraph(const char *filename) {
-    FILE *file = fopen(filename, "rt");
-    if (!file) { perror("open file"); exit(EXIT_FAILURE); }
-
-    int n, d, a;
-    float p;
-    fscanf(file, "%d", &n);
-    AdjList G = create_adjlist(n);
-
-    while (fscanf(file, "%d %d %f", &d, &a, &p) == 3)
-        add_edge(&G, d, a, p);
-
     fclose(file);
-    return G;
+    return g;
 }
 
-int verify_markov(const AdjList *G) {
+int verify_markov(const adjlist_t *g, float tol_low, float tol_high) {
+    // tol_low et tol_high sont inclusifs (ex : 0.99, 1.0)
     int ok = 1;
-    for (int i = 0; i < G->n; ++i) {
-        double sum = 0;
-        for (Cell *c = G->lists[i].head; c; c=c->next)
-            sum += c->prob;
-        if (!(sum >= 0.99 && sum <= 1.01)) {
-            printf("Sommet %d : somme = %.4f ❌\n", i+1, sum);
+    for (int i=0;i<g->size;i++) {
+        float sum = 0.0f;
+        cell_t *cur = g->lists[i].head;
+        while (cur) {
+            sum += cur->prob;
+            cur = cur->next;
+        }
+        if (sum < tol_low || sum > tol_high) {
+            printf("la somme des probabilités du sommet %d est %.2f\n", i+1, sum);
             ok = 0;
         }
     }
-    if (ok) printf("✅ Graphe de Markov valide.\n");
-    else    printf("❌ Graphe NON valide.\n");
+    if (ok) printf("Le graphe est un graphe de Markov\n");
+    else printf("Le graphe n'est pas un graphe de Markov\n");
     return ok;
+}
+
+// getId: convertit 1->"A", 2->"B", ..., 26->"Z", 27->"AA" ...
+char *getId(int num) {
+    if (num <= 0) return NULL;
+    // construire dans un buffer, puis dupliquer
+    char buf[64];
+    int idx = 0;
+    int n = num;
+    // we will build reversed base-26 (1..26)
+    char tmp[64];
+    int t = 0;
+    while (n > 0) {
+        n--; // shift because there is no 0 digit
+        int r = n % 26;
+        tmp[t++] = 'A' + r;
+        n /= 26;
+    }
+    // inverse
+    for (int i=0;i<t;i++) buf[i] = tmp[t-1-i];
+    buf[t] = '\0';
+    return strdup(buf);
+}
+
+int writeMermaid(const adjlist_t *g, const char *filename) {
+    FILE *f = fopen(filename, "wt");
+    if (f == NULL) return -1;
+    fprintf(f, "---\nconfig:\n   layout: elk\n   theme: neo\n   look: neo\n---\n\nflowchart LR\n");
+    // nodes
+    for (int i=0;i<g->size;i++) {
+        char *id = getId(i+1);
+        fprintf(f, "%s((%d))\n", id, i+1);
+        free(id);
+    }
+
+    // edges: iterate lists; remember lists store edges in reverse-insertion order (insertion en tête)
+    for (int i=0;i<g->size;i++) {
+        cell_t *cur = g->lists[i].head;
+        char *src = getId(i+1);
+        while (cur) {
+            char *dst = getId(cur->dest);
+            fprintf(f, "%s -->|%.2f|%s\n", src, cur->prob, dst);
+            free(dst);
+            cur = cur->next;
+        }
+        free(src);
+    }
+    fclose(f);
+    return 0;
 }
