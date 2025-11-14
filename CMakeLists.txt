@@ -1,16 +1,12 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c11 -g
+cmake_minimum_required(VERSION 3.16)
+project(projet_graphe_C C)
 
-all: main
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
-main: main.o graph.o
-	$(CC) $(CFLAGS) -o main main.o graph.o
-
-main.o: main.c graph.h
-	$(CC) $(CFLAGS) -c main.c
-
-graph.o: graph.c graph.h
-	$(CC) $(CFLAGS) -c graph.c
-
-clean:
-	rm -f *.o main graph_mermaid.txt
+add_executable(projet_graphe
+        main.c
+        list.c
+        adj_list.c
+        utils.c
+        hasse.c
