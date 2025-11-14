@@ -66,7 +66,7 @@ int verify_markov(const AdjList *G) {
         for (Cell *c = G->lists[i].head; c; c=c->next)
             sum += c->prob;
         if (!(sum >= 0.99 && sum <= 1.01)) {
-            printf("Sommet %d : somme = %.4f ❌\n", i+1, sum);
+            printf("Sommet %d : somme = %.4f \n", i+1, sum);
             ok = 0;
         }
     }
