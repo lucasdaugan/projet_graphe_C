@@ -4,9 +4,9 @@ project(projet_graphe_C C)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 add_executable(projet_graphe_C
 		main.c
-		list.c
 		adj_list.c
-		utils.c
 )

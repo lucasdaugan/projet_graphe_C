@@ -8,7 +8,14 @@
 #include <math.h>
 #include <string.h>
 
-
+cell_t *create_cell(int dest, float prob) {
+    cell_t *c = (cell_t*)malloc(sizeof(cell_t));
+    if (c == NULL) return NULL;
+    c->dest = dest;
+    c->prob = prob;
+    c->next = NULL;
+    return c;
+}
 
 list_t create_list() {
     list_t l;
@@ -46,8 +53,23 @@ void free_adjlist(adjlist_t *g) {
     g->size = 0;
 }
 
+void add_cell_to_list(list_t *lst, int dest, float prob) {
+    cell_t *c = create_cell(dest, prob);
+    if (c == NULL) return;
+    c->next = lst->head; // insertion en tête
+    lst->head = c;
+}
 
 
+void print_list(const list_t *lst, int vertex) {
+    printf("Liste pour le sommet %d:[head]", vertex);
+    cell_t *cur = lst->head;
+    while (cur) {
+        printf(" -> (%d, %.2f)", cur->dest, cur->prob);
+        cur = cur->next;
+    }
+    printf("\n");
+}
 
 void print_adjlist(const adjlist_t *g) {
     if (g == NULL) return;
@@ -105,13 +127,6 @@ int verify_markov(const adjlist_t *g, float tol_low, float tol_high) {
     return ok;
 }
 
-// Implémentation de strdup
-char *my_strdup(const char *src) {
-    size_t len = strlen(src) + 1;
-    char *dest = malloc(len);
-    if (dest) memcpy(dest, src, len);
-    return dest;
-}
 
 char *getId(int num) {
     if (num <= 0) return NULL;
@@ -128,7 +143,7 @@ char *getId(int num) {
     }
     for (int i = 0; i < t; i++) buf[i] = tmp[t - 1 - i];
     buf[t] = '\0';
-    return my_strdup(buf);
+    return strdup(buf);
 }
 
 int writeMermaid(const adjlist_t *g, const char *filename) {
