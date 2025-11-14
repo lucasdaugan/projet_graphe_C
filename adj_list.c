@@ -70,7 +70,7 @@ int verify_markov(const AdjList *G) {
             ok = 0;
         }
     }
-    if (ok) printf("✅ Graphe de Markov valide.\n");
-    else    printf("❌ Graphe NON valide.\n");
+    if (ok) printf("Graphe de Markov valide.\n");
+    else    printf("Graphe NON valide.\n");
     return ok;
 }
