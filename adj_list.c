@@ -8,14 +8,7 @@
 #include <math.h>
 #include <string.h>
 
-cell_t *create_cell(int dest, float prob) {
-    cell_t *c = (cell_t*)malloc(sizeof(cell_t));
-    if (c == NULL) return NULL;
-    c->dest = dest;
-    c->prob = prob;
-    c->next = NULL;
-    return c;
-}
+
 
 list_t create_list() {
     list_t l;
@@ -53,22 +46,8 @@ void free_adjlist(adjlist_t *g) {
     g->size = 0;
 }
 
-void add_cell_to_list(list_t *lst, int dest, float prob) {
-    cell_t *c = create_cell(dest, prob);
-    if (c == NULL) return;
-    c->next = lst->head;
-    lst->head = c;
-}
 
-void print_list(const list_t *lst, int vertex) {
-    printf("Liste pour le sommet %d:[head]", vertex);
-    cell_t *cur = lst->head;
-    while (cur) {
-        printf(" -> (%d, %.2f)", cur->dest, cur->prob);
-        cur = cur->next;
-    }
-    printf("\n");
-}
+
 
 void print_adjlist(const adjlist_t *g) {
     if (g == NULL) return;

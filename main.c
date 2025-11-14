@@ -5,8 +5,8 @@
 int
 main() {
     
-    const char *input = "data/exemple_valid_step3.txt";
-    const char *out = "output/graph_mermaid.txt";
+    const char *input = "../data/exemple_valid_step3.txt";
+    const char *out = "../output/graph_mermaid2.txt";
 
 
     adjlist_t g = readGraph(input);

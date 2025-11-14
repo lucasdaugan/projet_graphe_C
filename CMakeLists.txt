@@ -9,6 +9,4 @@ add_executable(projet_graphe_C
 		list.c
 		adj_list.c
 		utils.c
-		hasse.c
-		hasse.h
 )
