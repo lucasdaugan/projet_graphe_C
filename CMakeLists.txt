@@ -10,3 +10,4 @@ add_executable(projet_graphe
         adj_list.c
         utils.c
         hasse.c
+)
