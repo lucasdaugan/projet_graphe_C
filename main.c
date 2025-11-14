@@ -2,7 +2,8 @@
 #include "adj_list.h"
 #include "adj_list.h"
 
-int main() {
+int
+main() {
     
     const char *input = "data/exemple_valid_step3.txt";
     const char *out = "output/graph_mermaid.txt";

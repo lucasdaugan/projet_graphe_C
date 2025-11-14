@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 cell_t *create_cell(int dest, float prob) {
     cell_t *c = (cell_t*)malloc(sizeof(cell_t));
@@ -104,9 +105,8 @@ adjlist_t readGraph(const char *filename) {
 }
 
 int verify_markov(const adjlist_t *g, float tol_low, float tol_high) {
-    // tol_low et tol_high sont inclusifs (ex : 0.99, 1.0)
     int ok = 1;
-    for (int i=0;i<g->size;i++) {
+    for (int i = 0; i < g->size; i++) {
         float sum = 0.0f;
         cell_t *cur = g->lists[i].head;
         while (cur) {
@@ -114,35 +114,42 @@ int verify_markov(const adjlist_t *g, float tol_low, float tol_high) {
             cur = cur->next;
         }
         if (sum < tol_low || sum > tol_high) {
-            printf("la somme des probabilités du sommet %d est %.2f\n", i+1, sum);
+            printf("la somme des probabilités du sommet %d est %.2f\n", i + 1, sum);
             ok = 0;
         }
     }
-    if (ok) {printf("Le graphe est un graphe de Markov\n")};
-    else {printf("Le graphe n'est pas un graphe de Markov\n")};
+    if (ok) {
+        printf("Le graphe est un graphe de Markov\n");
+    } else {
+        printf("Le graphe n'est pas un graphe de Markov\n");
+    }
     return ok;
 }
 
-// getId: convertit 1->"A", 2->"B", ..., 26->"Z", 27->"AA" ...
+// Implémentation de strdup
+char *my_strdup(const char *src) {
+    size_t len = strlen(src) + 1;
+    char *dest = malloc(len);
+    if (dest) memcpy(dest, src, len);
+    return dest;
+}
+
 char *getId(int num) {
     if (num <= 0) return NULL;
-    // construire dans un buffer, puis dupliquer
     char buf[64];
     int idx = 0;
     int n = num;
-    // we will build reversed base-26 (1..26)
     char tmp[64];
     int t = 0;
     while (n > 0) {
-        n--; // shift because there is no 0 digit
+        n--;
         int r = n % 26;
         tmp[t++] = 'A' + r;
         n /= 26;
     }
-    // inverse
-    for (int i=0;i<t;i++) buf[i] = tmp[t-1-i];
+    for (int i = 0; i < t; i++) buf[i] = tmp[t - 1 - i];
     buf[t] = '\0';
-    return strdup(buf);
+    return my_strdup(buf);
 }
 
 int writeMermaid(const adjlist_t *g, const char *filename) {
