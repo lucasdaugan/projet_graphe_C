@@ -9,4 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 add_executable(projet_graphe_C
 		main.c
 		adj_list.c
+		tarjan.c
+		hasse.h
+		hasse.c
 )
