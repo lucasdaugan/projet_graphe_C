@@ -3,6 +3,7 @@
 #include "adj_list.h"
 #include "tarjan.h"
 #include "hasse.h"
+#include <windows.h>
 
 /* ----- Petites fonctions d'affichage utiles (Partie 2) ----- */
 
@@ -67,9 +68,11 @@ static void print_characteristics(const t_partition *P, const t_link_array *L) {
 
 int main(void)
 {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
     /* ===== Partie 1 (inchangée) ===== */
-    const char *input_graph = "data/exemple1_from_chatGPT.txt";
-    const char *out_graph_mmd = "output/graph_mermaid4.mmd";
+    const char *input_graph = "data/exemple_hasse1.txt";
+    const char *out_graph_mmd = "output/graph_mermaid6.mmd";
 
     adjlist_t g = readGraph(input_graph);
 
