@@ -12,4 +12,6 @@ add_executable(projet_graphe_C
 		tarjan.c
 		hasse.h
 		hasse.c
+		utils.c
+		utils.h
 )

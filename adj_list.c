@@ -61,7 +61,7 @@ void add_cell_to_list(list_t *lst, int dest, float prob) {
 }
 
 
-void print_list(const list_t *lst, int vertex) {
+void print_list(list_t *lst, int vertex) {
     printf("Liste pour le sommet %d:[head]", vertex);
     cell_t *cur = lst->head;
     while (cur) {
@@ -71,7 +71,7 @@ void print_list(const list_t *lst, int vertex) {
     printf("\n");
 }
 
-void print_adjlist(const adjlist_t *g) {
+void print_adjlist(adjlist_t *g) {
     if (g == NULL) return;
     for (int i=0;i<g->size;i++) {
         print_list(&g->lists[i], i+1);
@@ -105,7 +105,7 @@ adjlist_t readGraph(const char *filename) {
     return g;
 }
 
-int verify_markov(const adjlist_t *g, float tol_low, float tol_high) {
+int verify_markov(adjlist_t *g, float tol_low, float tol_high) {
     int ok = 1;
     for (int i = 0; i < g->size; i++) {
         float sum = 0.0f;
@@ -146,7 +146,7 @@ char *getId(int num) {
     return strdup(buf);
 }
 
-int writeMermaid(const adjlist_t *g, const char *filename) {
+int writeMermaid(adjlist_t *g, const char *filename) {
     FILE *f = fopen(filename, "wt");
     if (f == NULL) return -1;
     fprintf(f, "---\nconfig:\n   layout: elk\n   theme: neo\n   look: neo\n---\n\nflowchart LR\n");

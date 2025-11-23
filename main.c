@@ -1,77 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "adj_list.h"
+#include "utils.h"
 #include "tarjan.h"
 #include "hasse.h"
+#include "matrix.h"
 #include <windows.h>
-
-/* ----- Petites fonctions d'affichage utiles (Partie 2) ----- */
-
-// Affiche les composantes au format demandé
-static void print_partition(const t_partition *P) {
-    for (int ci = 0; ci < P->count; ++ci) {
-        const t_classe *C = &P->classes[ci];
-        const char *cname = (C->name[0] ? C->name : "(C?)");
-        printf("Composante %s: {", cname);
-        for (int k = 0; k < C->count; ++k) {
-            printf("%d", C->verts[k]);
-            if (k + 1 < C->count) printf(",");
-        }
-        printf("}\n");
-    }
-}
-
-// Détermine si une classe est transitoire (au moins un lien sortant)
-static int classe_est_transitoire(int idx_classe, const t_link_array *L) {
-    for (int i = 0; i < L->log_size; ++i) {
-        if (L->links[i].from == idx_classe) return 1;
-    }
-    return 0;
-}
-
-// Compte les liens sortants d'une classe
-static int degre_sortant(int idx_classe, const t_link_array *L) {
-    int d = 0;
-    for (int i = 0; i < L->log_size; ++i) {
-        if (L->links[i].from == idx_classe) d++;
-    }
-    return d;
-}
-
-// Affiche les caractéristiques demandées (transitoire/persistante, absorbant, irréductible)
-static void print_characteristics(const t_partition *P, const t_link_array *L) {
-    int irreductible = (P->count == 1);
-    int any_absorbant = 0;
-
-    printf("\n--- Caractéristiques du graphe ---\n");
-    for (int ci = 0; ci < P->count; ++ci) {
-        const t_classe *C = &P->classes[ci];
-        const char *cname = (C->name[0] ? C->name : "(C?)");
-        int trans = classe_est_transitoire(ci, L);
-        if (trans) {
-            printf("La classe %s est transitoire", cname);
-        } else {
-            printf("La classe %s est persistante", cname);
-        }
-
-        if (!trans && C->count == 1) {
-            // classe persistante de taille 1 => état absorbant
-            printf(" – l'état %d est absorbant", C->verts[0]);
-            any_absorbant = 1;
-        }
-        printf(" (|C|=%d, sorties=%d)\n", C->count, degre_sortant(ci, L));
-    }
-
-    printf("\nÉtat(s) absorbant(s) : %s\n", any_absorbant ? "OUI" : "NON");
-    printf("Graphe irréductible : %s\n", irreductible ? "OUI (une seule classe)" : "NON");
-}
 
 int main(void)
 {
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
     /* ===== Partie 1 (inchangée) ===== */
-    const char *input_graph = "data/exemple_hasse1.txt";
+    const char *input_graph = "data/exemple_valid_step3.txt";
     const char *out_graph_mmd = "output/graph_mermaid6.mmd";
 
     adjlist_t g = readGraph(input_graph);
@@ -124,6 +65,68 @@ int main(void)
     hasse_free_links(&links);
     partition_free(&part);
     free_adjlist(&g);
+
+    
+    /* ===== PARTIE 3 (Matrice) ===== */
+    printf("\n========== PARTIE 3 : MATRICES ==========\n");
+    
+    const char *input_graph_mat = "data/exemple_meteo.txt";
+
+    adjlist_t gm = readGraph(input_graph_mat);
+    
+    t_matrix M = matrix_from_adjlist(&gm);
+    
+    printf("Matrice M :\n");
+    matrix_print(&M);
+    
+    // 2. Calcul de M^2
+    t_matrix M2 = matrix_multiply(&M, &M);
+    
+    printf("\nMatrice M^2 (Apres 2 etapes) :\n");
+    matrix_print(&M2);
+    
+    // 2. Calcul de M^2
+    t_matrix M3 = matrix_multiply(&M2, &M);
+    
+    printf("\nMatrice M^3 (Apres 3 etapes) :\n");
+    matrix_print(&M3);
+    
+    // 3. Recherche de M^N
+    printf("\n--- Recherche de M^n ---\n");
+    
+    t_matrix M_actuelle = matrix_create_zero(M.size);
+    matrix_copy(&M_actuelle, &M); // On commence avec M
+    
+    t_matrix M_suivante;
+    
+    double diff = 1.0; // On initialise diff à 1
+    double epsilon = 0.01; // Le seuil de tolérance demandé
+    int k = 1;
+    int max_iterations = 999; // Sécurité au cas où il y est une boucle infinie
+    
+    // Tant que la différence est grande, on continue
+    while (diff > epsilon && k < max_iterations){
+        M_suivante = matrix_multiply(&M_actuelle, &M);
+        diff = matrix_diff(&M_actuelle, &M_suivante);
+        
+        printf("Etape %d -> diff = %f\n", k, diff);
+        
+        matrix_free(&M_actuelle);
+        M_actuelle = M_suivante;
+        k++;
+    }
+    
+    if (k >= max_iterations) {printf("Non atteint apres %d iterations\n", max_iterations);}
+    else {
+        printf("\nAtteint a la puissance k = %d\n", k);
+        printf("Difference finale : %f\n", diff);
+        printf("\nM^n approximative :\n");
+        matrix_print(&M_actuelle);
+    }
+    
+    matrix_free(&M);
+    matrix_free(&M2);
+    matrix_free(&M_actuelle);
 
     return 0;
 }

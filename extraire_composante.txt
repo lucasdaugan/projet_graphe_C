@@ -1,0 +1,31 @@
+static void extraire_composante(int racine, t_pile *p, t_tarjan_vertex *V, t_partition *partition)
+{
+    // Construire le nom de la classe "Ck", où k = nombre actuel de classes + 1
+    char nom_classe[16];
+    snprintf(nom_classe, sizeof(nom_classe), "C%d", partition->count + 1);
+
+    int idx_classe = partition_add_empty_class(partition, nom_classe);
+
+    // Dépiler jusqu’à inclure la racine
+    while (1) {
+        int sommet = pile_depiler(p);
+        V[sommet].inP = 0;
+
+        // Ajouter sommet à la classe 
+        classe_add_vertex(&partition->classes[idx_classe], sommet + 1);
+        if (sommet == racine) break;
+    }
+
+    // // Optionnel : trier les sommets pour un affichage stable
+    // t_classe *classe = &partition->classes[idx_classe];
+    // for (int i = 1; i < classe->count; ++i) {
+    //     int cle = classe->verts[i];
+    //     int j = i - 1;
+    //     while (j >= 0 && classe->verts[j] > cle) {
+    //         classe->verts[j + 1] = classe->verts[j];
+    //         j--;
+    //     }
+    //     classe->verts[j + 1] = cle;
+    // }
+}
+
